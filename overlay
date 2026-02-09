@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- FONT BARU -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+/* =====================
+   BANNER SIZE (LOWER THIRD)
+===================== */
+.banner{
+  position:relative;
+  width:100vw;
+  height:200px; /* tinggi banner */
+  overflow:hidden;
+
+  background:
+  linear-gradient(90deg,#0a0014,#120020,#0a0014);
+
+  font-family:'Orbitron', sans-serif;
+}
+
+/* =====================
+   CHAOS LINES BACKGROUND
+===================== */
+.line{
+  position:absolute;
+  width:200%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,#9d4edd,transparent);
+  opacity:.25;
+  animation:move linear infinite;
+  transform:rotate(var(--rot));
+}
+
+@keyframes move{
+  from{left:-100%;}
+  to{left:100%;}
+}
+
+/* =====================
+   TEXT RIGHT SIDE
+===================== */
+.text{
+  position:absolute;
+  right:60px;           /* pojok kanan */
+  top:50%;
+  transform:translateY(-50%);
+
+  font-size:48px;
+  font-weight:700;
+
+  color:#fff;
+  letter-spacing:2px;
+
+  text-shadow:
+    0 0 10px #c77dff,
+    0 0 30px #9d4edd,
+    0 0 60px #7a00ff;
+
+  animation:rightSlide 6s ease-in-out infinite;
+}
+
+/* MASUK & KELUAR DARI KANAN */
+@keyframes rightSlide{
+  0%{
+    opacity:0;
+    transform:translate(120px,-50%);
+  }
+  20%{
+    opacity:1;
+    transform:translate(0,-50%);
+  }
+  80%{
+    opacity:1;
+    transform:translate(0,-50%);
+  }
+  100%{
+    opacity:0;
+    transform:translate(120px,-50%);
+  }
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .text{
+    font-size:28px;
+    right:20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="banner" id="banner">
+
+  <!-- TEXT ONLY -->
+  <div class="text">@1doyyys_</div>
+
+</div>
+
+<script>
+const banner = document.getElementById("banner");
+
+/* neon lines generator */
+for(let i=0;i<18;i++){
+  const line = document.createElement("div");
+  line.className="line";
+
+  const top=Math.random()*100;
+  const dur=3+Math.random()*5;
+  const rot=(Math.random()*10-5).toFixed(2);
+
+  line.style.top=top+"%";
+  line.style.animationDuration=dur+"s";
+  line.style.setProperty("--rot", rot+"deg");
+
+  banner.appendChild(line);
+}
+</script>
+
+</body>
+</html>
