@@ -131,3 +131,22 @@ for(let i=0;i<18;i++){
 
 </body>
 </html>
+
+.video-container {
+  position: relative;
+  width: 640px;
+}
+
+.video-container video {
+  width: 100%;
+  border: 5px solid #8acdea; /* warna utama */
+  border-radius: 10px;
+}
+
+.video-container .overlay {
+  position: absolute;
+  inset: 0;
+  border: 3px dashed #ffd460; /* warna pelengkap */
+  border-radius: 10px;
+  pointer-events: none;
+}
