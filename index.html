@@ -1,155 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<!-- FONT BARU -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet">
-
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
-/* =====================
-   BANNER SIZE (LOWER THIRD)
-===================== */
-.banner{
-  position:relative;
-  width:100vw;
-  height:200px; /* tinggi banner */
-  overflow:hidden;
-
-  background:
-  linear-gradient(90deg,#0a0014,#120020,#0a0014);
-
-  font-family:'Orbitron', sans-serif;
-}
-
-/* =====================
-   TOP GLOW BORDER
-===================== */
-.banner::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:3px;
-
-  background:white;
-
-  box-shadow:
-    0 0 6px white,
-    0 0 12px #c77dff,
-    0 0 20px #9d4edd,
-    0 0 30px #7a00ff;
-
-  z-index:10;
-}
-
-/* =====================
-   CHAOS LINES BACKGROUND
-===================== */
-.line{
-  position:absolute;
-  width:200%;
-  height:2px;
-  background:linear-gradient(90deg,transparent,#9d4edd,transparent);
-  opacity:.25;
-  animation:move linear infinite;
-  transform:rotate(var(--rot));
-}
-
-@keyframes move{
-  from{left:-100%;}
-  to{left:100%;}
-}
-
-/* =====================
-   TEXT RIGHT SIDE
-===================== */
-.text{
-  position:absolute;
-  right:60px;           /* pojok kanan */
-  top:50%;
-  transform:translateY(-50%);
-
-  font-size:48px;
-  font-weight:700;
-
-  color:#fff;
-  letter-spacing:2px;
-
-  text-shadow:
-    0 0 10px #c77dff,
-    0 0 30px #9d4edd,
-    0 0 60px #7a00ff;
-
-  animation:rightSlide 6s ease-in-out infinite;
-}
-
-/* MASUK & KELUAR DARI KANAN */
-@keyframes rightSlide{
-  0%{
-    opacity:0;
-    transform:translate(120px,-50%);
-  }
-  20%{
-    opacity:1;
-    transform:translate(0,-50%);
-  }
-  80%{
-    opacity:1;
-    transform:translate(0,-50%);
-  }
-  100%{
-    opacity:0;
-    transform:translate(120px,-50%);
-  }
-}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .text{
-    font-size:28px;
-    right:20px;
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { background: #111; color: #0f0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        #btn { width: 80%; padding: 30px; border: 3px solid #0f0; background: #222; color: #0f0; font-weight: bold; border-radius: 15px; cursor: pointer; text-align: center; font-size: 18px; }
+        canvas { width: 90%; height: 120px; margin-top: 20px; background: #000; border: 1px solid #333; }
+    </style>
 </head>
-
 <body>
+    <div id="btn">TAP DISINI UNTUK AKTIFKAN MIC</div>
+    <canvas id="viz"></canvas>
 
-<div class="banner" id="banner">
+    <script>
+        const btn = document.getElementById('btn');
+        const canvas = document.getElementById('viz');
+        const ctx = canvas.getContext('2d');
 
-  <!-- TEXT ONLY -->
-  <div class="text">@1doyyys_</div>
+        async function start() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } 
+                });
+                
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioCtx.createMediaStreamSource(stream);
+                
+                // Compressor
+                const compressor = audioCtx.createDynamicsCompressor();
+                compressor.threshold.setValueAtTime(-25, audioCtx.currentTime);
+                compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+                
+                // Analyser (Visualizer)
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64; // Kecil saja biar ringan
+                
+                // HUBUNGKAN
+                source.connect(compressor);
+                compressor.connect(analyser);
+                // JANGAN hubungkan ke destination (audioCtx.destination) agar tidak gema/blok
+                
+                btn.innerText = "MIC AKTIF & COMPRESSED";
+                btn.style.borderColor = "#fff";
+                btn.style.color = "#fff";
 
-</div>
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                function draw() {
+                    requestAnimationFrame(draw);
+                    analyser.getByteFrequencyData(dataArray);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    let x = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        let h = dataArray[i] / 2;
+                        ctx.fillStyle = '#0f0';
+                        ctx.fillRect(x, canvas.height - h, 5, h);
+                        x += 8;
+                    }
+                }
+                draw();
+                audioCtx.resume();
+            } catch (err) {
+                btn.innerText = "ERROR: " + err.name;
+                console.error(err);
+            }
+        }
 
-<script>
-const banner = document.getElementById("banner");
-
-/* neon lines generator */
-for(let i=0;i<18;i++){
-  const line = document.createElement("div");
-  line.className="line";
-
-  const top=Math.random()*100;
-  const dur=3+Math.random()*5;
-  const rot=(Math.random()*10-5).toFixed(2);
-
-  line.style.top=top+"%";
-  line.style.animationDuration=dur+"s";
-  line.style.setProperty("--rot", rot+"deg");
-
-  banner.appendChild(line);
-}
-</script>
-
+        btn.addEventListener('click', start, { once: true });
+    </script>
 </body>
 </html>
